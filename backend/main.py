@@ -2,11 +2,15 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 import models, schemas
 from database import SessionLocal, engine
+import pandas as pd
+from fastapi.responses import StreamingResponse
+import io
+from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,10 +27,17 @@ def get_db():
         db.close()
 
 
-@app.get("/students")
-def get_students(db: Session = Depends(get_db)):
-    return db.query(models.Student).all()
+from fastapi import Query
 
+@app.get("/students")
+def get_students(name: str = Query(None), db: Session = Depends(get_db)):
+
+    query = db.query(models.Student)
+
+    if name:
+        query = query.filter(models.Student.name.contains(name))
+
+    return query.all()
 
 @app.post("/students")
 def add_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
@@ -57,3 +68,69 @@ def delete_student(student_id: int, db: Session = Depends(get_db)):
     db.delete(db_student)
     db.commit()
     return {"message": "deleted"}
+
+@app.post("/classes")
+def create_class(c: schemas.ClassCreate, db: Session = Depends(get_db)):
+    new_class = models.Class(**c.dict())
+    db.add(new_class)
+    db.commit()
+    db.refresh(new_class)
+    return new_class
+
+
+@app.get("/classes")
+def get_classes(db: Session = Depends(get_db)):
+    return db.query(models.Class).all()
+
+from sqlalchemy import func
+
+
+@app.get("/stats")
+def get_stats(db: Session = Depends(get_db)):
+
+    total_students = db.query(models.Student).count()
+
+    avg_gpa = db.query(func.avg(models.Student.gpa)).scalar()
+
+    major_stats = (
+        db.query(models.Student.major, func.count(models.Student.id))
+        .group_by(models.Student.major)
+        .all()
+    )
+
+    return {
+        "total_students": total_students,
+        "average_gpa": avg_gpa,
+        "students_by_major": major_stats
+    }
+
+@app.get("/export")
+def export_csv(db: Session = Depends(get_db)):
+
+    students = db.query(models.Student).all()
+
+    data = [
+        {
+            "student_id": s.student_id,
+            "name": s.name,
+            "birth_year": s.birth_year,
+            "major": s.major,
+            "gpa": s.gpa,
+            "class_id": s.class_id
+        }
+        for s in students
+    ]
+
+    df = pd.DataFrame(data)
+
+    stream = io.StringIO()
+    df.to_csv(stream, index=False)
+
+    response = StreamingResponse(
+        iter([stream.getvalue()]),
+        media_type="text/csv"
+    )
+
+    response.headers["Content-Disposition"] = "attachment; filename=students.csv"
+
+    return response
