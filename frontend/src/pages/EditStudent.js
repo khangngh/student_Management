@@ -9,10 +9,12 @@ function EditStudent() {
 
     const [form, setForm] = useState({
         student_id: "",
-        name: "",
-        birth_year: "",
+        first_name: "",
+        last_name: "",
+        birth_date: "",
         major: "",
-        gpa: ""
+        gpa: "",
+        class_id: ""
     })
 
     useEffect(() => {
@@ -25,21 +27,48 @@ function EditStudent() {
 
         const student = res.data.find(s => s.id === parseInt(id))
 
-        setForm(student)
+        if (student) {
+            setForm(student)
+        }
     }
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
+        })
     }
 
     const updateStudent = async () => {
 
-        await axios.put(
-            `http://127.0.0.1:8000/students/${id}`,
-            form
-        )
+        try {
 
-        navigate("/students")
+            const data = {
+                student_id: form.student_id,
+                first_name: form.first_name,
+                last_name: form.last_name,
+                birth_date: form.birth_date,
+                major: form.major,
+                gpa: parseFloat(form.gpa),
+                class_id: form.class_id
+            }
+
+            await axios.put(
+                `http://127.0.0.1:8000/students/${id}`,
+                data
+            )
+
+            alert("Student updated successfully")
+
+            navigate("/students")
+
+        } catch (error) {
+
+            console.log(error.response?.data)
+
+            alert("Error updating student")
+
+        }
     }
 
     return (
@@ -54,17 +83,30 @@ function EditStudent() {
                 onChange={handleChange}
             />
 
+            <br /><br />
+
             <input
-                name="name"
-                value={form.name || ""}
+                name="first_name"
+                value={form.first_name || ""}
                 onChange={handleChange}
             />
 
             <input
-                name="birth_year"
-                value={form.birth_year || ""}
+                name="last_name"
+                value={form.last_name || ""}
                 onChange={handleChange}
             />
+
+            <br /><br />
+
+            <input
+                type="date"
+                name="birth_date"
+                value={form.birth_date || ""}
+                onChange={handleChange}
+            />
+
+            <br /><br />
 
             <input
                 name="major"
@@ -72,7 +114,13 @@ function EditStudent() {
                 onChange={handleChange}
             />
 
+            <br /><br />
+
             <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="4"
                 name="gpa"
                 value={form.gpa || ""}
                 onChange={handleChange}
@@ -80,7 +128,17 @@ function EditStudent() {
 
             <br /><br />
 
-            <button onClick={updateStudent}>Update</button>
+            <input
+                name="class_id"
+                value={form.class_id || ""}
+                onChange={handleChange}
+            />
+
+            <br /><br />
+
+            <button onClick={updateStudent}>
+                Update Student
+            </button>
 
         </div>
     )

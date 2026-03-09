@@ -7,6 +7,9 @@ function StudentList() {
     const [students, setStudents] = useState([])
     const [search, setSearch] = useState("")
 
+    const [sortField, setSortField] = useState(null)
+    const [sortOrder, setSortOrder] = useState("asc")
+
     useEffect(() => {
         fetchStudents()
     }, [])
@@ -36,6 +39,27 @@ function StudentList() {
         window.open("http://127.0.0.1:8000/export")
     }
 
+    const sortData = (field) => {
+
+        const order =
+            sortField === field && sortOrder === "asc"
+                ? "desc"
+                : "asc"
+
+        setSortField(field)
+        setSortOrder(order)
+
+        const sorted = [...students].sort((a, b) => {
+
+            if (a[field] < b[field]) return order === "asc" ? -1 : 1
+            if (a[field] > b[field]) return order === "asc" ? 1 : -1
+            return 0
+
+        })
+
+        setStudents(sorted)
+    }
+
     return (
 
         <div>
@@ -60,6 +84,12 @@ function StudentList() {
                     </button>
                 </Link>
 
+                <Link to="/classes/add">
+                    <button style={{ marginLeft: "10px" }}>
+                        Add Class
+                    </button>
+                </Link>
+
                 <button
                     onClick={exportCSV}
                     style={{ marginLeft: "10px" }}
@@ -73,12 +103,35 @@ function StudentList() {
 
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Major</th>
-                        <th>Class</th>
-                        <th>GPA</th>
-                        <th>Action</th>
+
+                        <th onClick={() => sortData("student_id")}>
+                            ID
+                        </th>
+
+                        <th onClick={() => sortData("first_name")}>
+                            First Name
+                        </th>
+
+                        <th onClick={() => sortData("last_name")}>
+                            Last Name
+                        </th>
+
+                        <th onClick={() => sortData("major")}>
+                            Major
+                        </th>
+
+                        <th onClick={() => sortData("class_id")}>
+                            Class
+                        </th>
+
+                        <th onClick={() => sortData("gpa")}>
+                            GPA
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
                     </tr>
                 </thead>
 
@@ -90,7 +143,9 @@ function StudentList() {
 
                             <td>{s.student_id}</td>
 
-                            <td>{s.name}</td>
+                            <td>{s.first_name}</td>
+
+                            <td>{s.last_name}</td>
 
                             <td>{s.major}</td>
 

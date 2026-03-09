@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import ListStudent from "./pages/StudentList"
 import AddStudent from "./pages/AddStudent"
 import EditStudent from "./pages/EditStudent"
+import AddClass from "./pages/AddClass"
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
 
         <Route path="/students/edit/:id" element={<EditStudent />} />
 
+        <Route path="/classes/add" element={<AddClass />} />
       </Routes>
 
     </Router>

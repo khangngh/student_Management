@@ -8,8 +8,9 @@ function AddStudent() {
 
     const [form, setForm] = useState({
         student_id: "",
-        name: "",
-        birth_year: "",
+        first_name: "",
+        last_name: "",
+        birth_date: "",
         major: "",
         gpa: "",
         class_id: ""
@@ -24,11 +25,11 @@ function AddStudent() {
 
     const addStudent = async () => {
 
-        // kiểm tra dữ liệu
         if (
             !form.student_id ||
-            !form.name ||
-            !form.birth_year ||
+            !form.first_name ||
+            !form.last_name ||
+            !form.birth_date ||
             !form.major ||
             !form.gpa ||
             !form.class_id
@@ -39,8 +40,9 @@ function AddStudent() {
 
         const data = {
             student_id: form.student_id,
-            name: form.name,
-            birth_year: parseInt(form.birth_year),
+            first_name: form.first_name,
+            last_name: form.last_name,
+            birth_date: form.birth_date,
             major: form.major,
             gpa: parseFloat(form.gpa),
             class_id: form.class_id
@@ -52,6 +54,8 @@ function AddStudent() {
                 "http://127.0.0.1:8000/students",
                 data
             )
+
+            alert("Student added successfully")
 
             navigate("/students")
 
@@ -73,23 +77,29 @@ function AddStudent() {
             <input
                 name="student_id"
                 placeholder="Student ID"
+                maxLength="8"
                 onChange={handleChange}
             />
 
             <br /><br />
 
             <input
-                name="name"
-                placeholder="Name"
+                name="first_name"
+                placeholder="First Name"
+                onChange={handleChange}
+            />
+
+            <input
+                name="last_name"
+                placeholder="Last Name"
                 onChange={handleChange}
             />
 
             <br /><br />
 
             <input
-                type="number"
-                name="birth_year"
-                placeholder="Birth Year"
+                type="date"
+                name="birth_date"
                 onChange={handleChange}
             />
 
@@ -106,8 +116,9 @@ function AddStudent() {
             <input
                 type="number"
                 step="0.1"
+                min="0"
+                max="4"
                 name="gpa"
-                placeholder="GPA"
                 onChange={handleChange}
             />
 

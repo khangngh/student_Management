@@ -6,7 +6,7 @@ import pandas as pd
 from fastapi.responses import StreamingResponse
 import io
 from fastapi.middleware.cors import CORSMiddleware
-
+from sqlalchemy import or_
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -35,7 +35,12 @@ def get_students(name: str = Query(None), db: Session = Depends(get_db)):
     query = db.query(models.Student)
 
     if name:
-        query = query.filter(models.Student.name.contains(name))
+        query = query.filter(
+        or_(
+            models.Student.first_name.contains(name),
+            models.Student.last_name.contains(name)
+        )
+    )
 
     return query.all()
 
@@ -53,12 +58,15 @@ def update_student(student_id: int, student: schemas.StudentCreate, db: Session 
     db_student = db.query(models.Student).filter(models.Student.id == student_id).first()
 
     db_student.student_id = student.student_id
-    db_student.name = student.name
-    db_student.birth_year = student.birth_year
+    db_student.first_name = student.first_name
+    db_student.last_name = student.last_name
+    db_student.birth_date = student.birth_date
     db_student.major = student.major
     db_student.gpa = student.gpa
+    db_student.class_id = student.class_id
 
     db.commit()
+
     return db_student
 
 
@@ -110,16 +118,17 @@ def export_csv(db: Session = Depends(get_db)):
     students = db.query(models.Student).all()
 
     data = [
-        {
-            "student_id": s.student_id,
-            "name": s.name,
-            "birth_year": s.birth_year,
-            "major": s.major,
-            "gpa": s.gpa,
-            "class_id": s.class_id
-        }
-        for s in students
-    ]
+    {
+        "Student ID": s.student_id,
+        "First Name": s.first_name,
+        "Last Name": s.last_name,
+        "Birth Date": s.birth_date,
+        "Major": s.major,
+        "GPA": s.gpa,
+        "Class": s.class_id
+    }
+    for s in students
+]
 
     df = pd.DataFrame(data)
 
