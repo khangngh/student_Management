@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
-
+import MajorChart from "../components/MajorChart"
 function StudentList() {
 
     const [students, setStudents] = useState([])
@@ -16,9 +16,6 @@ function StudentList() {
         fetchStats()
     }, [])
 
-    // =============================
-    // FETCH STUDENTS
-    // =============================
     const fetchStudents = async () => {
 
         let url = "http://127.0.0.1:8000/students"
@@ -32,9 +29,6 @@ function StudentList() {
         setStudents(res.data)
     }
 
-    // =============================
-    // FETCH STATS
-    // =============================
     const fetchStats = async () => {
 
         const res = await axios.get(
@@ -44,9 +38,6 @@ function StudentList() {
         setStats(res.data)
     }
 
-    // =============================
-    // DELETE STUDENT
-    // =============================
     const deleteStudent = async (id) => {
 
         await axios.delete(
@@ -57,9 +48,6 @@ function StudentList() {
         fetchStats()
     }
 
-    // =============================
-    // EXPORT CSV
-    // =============================
     const exportCSV = () => {
 
         window.open(
@@ -67,9 +55,6 @@ function StudentList() {
         )
     }
 
-    // =============================
-    // SORT FUNCTION
-    // =============================
     const sortData = (field) => {
 
         const order =
@@ -96,9 +81,9 @@ function StudentList() {
 
     return (
 
-        <div>
+        <div className="container">
 
-            <h2>Student List</h2>
+            <h1 className="title">Student Management</h1>
 
             {/* =============================
                 STATISTICS
@@ -106,31 +91,24 @@ function StudentList() {
 
             {stats && (
 
-                <div style={{
-                    border: "1px solid gray",
-                    padding: "10px",
-                    marginBottom: "20px",
-                    width: "400px"
-                }}>
+                <div className="stats">
 
-                    <b>Total Students:</b> {stats.total_students}
-                    <br />
+                    <div className="card">
+                        <h3>Total Students</h3>
+                        <p>{stats.total_students}</p>
+                    </div>
 
-                    <b>Average GPA:</b> {stats.average_gpa?.toFixed(2)}
+                    <div className="card">
+                        <h3>Average GPA</h3>
+                        <p>{stats.average_gpa?.toFixed(2)}</p>
+                    </div>
 
-                    <br /><br />
+                    <div className="card">
+                        <h3>Students by Major</h3>
 
-                    <b>Students by Major:</b>
+                        <MajorChart data={stats.students_by_major} />
 
-                    <ul>
-
-                        {stats.students_by_major.map((m, i) => (
-                            <li key={i}>
-                                {m.major} : {m.count}
-                            </li>
-                        ))}
-
-                    </ul>
+                    </div>
 
                 </div>
 
@@ -140,7 +118,7 @@ function StudentList() {
                 ACTION BAR
             ============================== */}
 
-            <div style={{ marginBottom: "20px" }}>
+            <div className="toolbar">
 
                 <input
                     placeholder="Search by name..."
@@ -153,21 +131,18 @@ function StudentList() {
                 </button>
 
                 <Link to="/students/add">
-                    <button style={{ marginLeft: "10px" }}>
+                    <button>
                         Add Student
                     </button>
                 </Link>
 
                 <Link to="/classes/add">
-                    <button style={{ marginLeft: "10px" }}>
+                    <button>
                         Add Class
                     </button>
                 </Link>
 
-                <button
-                    onClick={exportCSV}
-                    style={{ marginLeft: "10px" }}
-                >
+                <button onClick={exportCSV}>
                     Export CSV
                 </button>
 
@@ -177,7 +152,7 @@ function StudentList() {
                 STUDENT TABLE
             ============================== */}
 
-            <table border="1">
+            <table className="student-table">
 
                 <thead>
 
@@ -228,13 +203,16 @@ function StudentList() {
                             <td>{s.class_id}</td>
                             <td>{s.gpa}</td>
 
-                            <td>
+                            <td className="actions">
 
                                 <Link to={`/students/edit/${s.id}`}>
-                                    <button>Edit</button>
+                                    <button className="edit">
+                                        Edit
+                                    </button>
                                 </Link>
 
                                 <button
+                                    className="delete"
                                     onClick={() => deleteStudent(s.id)}
                                 >
                                     Delete

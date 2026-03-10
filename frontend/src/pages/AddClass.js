@@ -1,117 +1,126 @@
-    import React, { useState } from "react"
-    import axios from "axios"
-    import { useNavigate } from "react-router-dom"
+import React, { useState } from "react"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
+import "./AddClass.css"
 
-    function AddClass() {
+function AddClass() {
 
-        const navigate = useNavigate()
+    const navigate = useNavigate()
 
-        const [form, setForm] = useState({
-            class_id: "",
-            class_name: "",
-            advisor: "",
-            start_date: "",
-            end_date: ""
+    const [form, setForm] = useState({
+        class_id: "",
+        class_name: "",
+        advisor: "",
+        start_date: "",
+        end_date: ""
+    })
+
+    const handleChange = (e) => {
+
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
         })
+    }
 
-        const handleChange = (e) => {
+    const addClass = async () => {
 
-            setForm({
-                ...form,
-                [e.target.name]: e.target.value
-            })
+        if (
+            !form.class_id ||
+            !form.class_name ||
+            !form.advisor ||
+            !form.start_date ||
+            !form.end_date
+        ) {
+            alert("Please fill all fields")
+            return
         }
 
-        const addClass = async () => {
+        try {
 
-            // kiểm tra dữ liệu
-            if (
-                !form.class_id ||
-                !form.class_name ||
-                !form.advisor ||
-                !form.start_date ||
-                !form.end_date
-            ) {
-                alert("Please fill all fields")
-                return
-            }
+            console.log(form)
 
-            try {
+            await axios.post(
+                "http://127.0.0.1:8000/classes",
+                form
+            )
 
-                console.log(form)   // debug xem dữ liệu gửi đi
+            alert("Class created successfully")
 
-                await axios.post(
-                    "http://127.0.0.1:8000/classes",
-                    form
-                )
+            navigate("/students")
 
-                alert("Class created successfully")
+        } catch (error) {
 
-                navigate("/students")
+            console.log("Error:", error.response?.data)
 
-            } catch (error) {
+            alert("Failed to create class")
 
-                console.log("Error:", error.response?.data)
-
-                alert("Failed to create class")
-
-            }
         }
+    }
 
-        return (
+    return (
 
-            <div>
+        <div className="addclass-container">
 
-                <h2>Add Class</h2>
+            <button
+                className="addclass-back"
+                onClick={() => navigate("/students")}
+            >
+                ← Back
+            </button>
+
+            <h1 className="addclass-title">
+                Add Class
+            </h1>
+
+            <div className="addclass-card">
 
                 <input
+                    className="addclass-input"
                     name="class_id"
                     placeholder="Class ID"
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
                 <input
+                    className="addclass-input"
                     name="class_name"
                     placeholder="Class Name"
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
                 <input
+                    className="addclass-input"
                     name="advisor"
                     placeholder="Advisor"
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
-                <label>Start Date</label>
                 <input
+                    className="addclass-input"
                     type="date"
                     name="start_date"
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
-                <label>End Date</label>
                 <input
+                    className="addclass-input"
                     type="date"
                     name="end_date"
                     onChange={handleChange}
                 />
 
-                <br /><br />
-
-                <button onClick={addClass}>
+                <button
+                    className="addclass-button"
+                    onClick={addClass}
+                >
                     Add Class
                 </button>
 
             </div>
-        )
-    }
 
-    export default AddClass
+        </div>
+    )
+}
+
+export default AddClass
