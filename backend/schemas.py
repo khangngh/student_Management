@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import date
 
 class ClassBase(BaseModel):
@@ -25,7 +24,11 @@ class StudentBase(BaseModel):
     major: str
     gpa: float = Field(..., ge=0, le=4)
     class_id: str
-
+    @field_validator("birth_date")
+    def validate_birth_date(cls, v):
+        if v > date.today():
+            raise ValueError("Birth date cannot be in the future")
+        return v
 
 class StudentCreate(StudentBase):
     pass

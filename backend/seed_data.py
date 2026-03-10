@@ -1,7 +1,10 @@
 import random
 from datetime import date
-from database import SessionLocal
+from database import SessionLocal, engine
 import models
+
+# TẠO TABLE TRƯỚC KHI INSERT
+models.Base.metadata.create_all(bind=engine)
 
 db = SessionLocal()
 
@@ -50,7 +53,7 @@ class_ids = ["C01","C02","C03","C04","C05"]
 for i in range(50):
 
     student = models.Student(
-        student_id=str(10000000 + i),   # 8 digits
+        student_id=str(10000000 + i),
         first_name=random.choice(first_names),
         last_name=random.choice(last_names),
         birth_date=date(

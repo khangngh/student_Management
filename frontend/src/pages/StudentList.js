@@ -6,14 +6,19 @@ function StudentList() {
 
     const [students, setStudents] = useState([])
     const [search, setSearch] = useState("")
+    const [stats, setStats] = useState(null)
 
     const [sortField, setSortField] = useState(null)
     const [sortOrder, setSortOrder] = useState("asc")
 
     useEffect(() => {
         fetchStudents()
+        fetchStats()
     }, [])
 
+    // =============================
+    // FETCH STUDENTS
+    // =============================
     const fetchStudents = async () => {
 
         let url = "http://127.0.0.1:8000/students"
@@ -27,18 +32,44 @@ function StudentList() {
         setStudents(res.data)
     }
 
+    // =============================
+    // FETCH STATS
+    // =============================
+    const fetchStats = async () => {
+
+        const res = await axios.get(
+            "http://127.0.0.1:8000/stats"
+        )
+
+        setStats(res.data)
+    }
+
+    // =============================
+    // DELETE STUDENT
+    // =============================
     const deleteStudent = async (id) => {
 
-        await axios.delete(`http://127.0.0.1:8000/students/${id}`)
+        await axios.delete(
+            `http://127.0.0.1:8000/students/${id}`
+        )
 
         fetchStudents()
+        fetchStats()
     }
 
+    // =============================
+    // EXPORT CSV
+    // =============================
     const exportCSV = () => {
 
-        window.open("http://127.0.0.1:8000/export")
+        window.open(
+            "http://127.0.0.1:8000/export"
+        )
     }
 
+    // =============================
+    // SORT FUNCTION
+    // =============================
     const sortData = (field) => {
 
         const order =
@@ -51,10 +82,13 @@ function StudentList() {
 
         const sorted = [...students].sort((a, b) => {
 
-            if (a[field] < b[field]) return order === "asc" ? -1 : 1
-            if (a[field] > b[field]) return order === "asc" ? 1 : -1
-            return 0
+            if (a[field] < b[field])
+                return order === "asc" ? -1 : 1
 
+            if (a[field] > b[field])
+                return order === "asc" ? 1 : -1
+
+            return 0
         })
 
         setStudents(sorted)
@@ -65,6 +99,46 @@ function StudentList() {
         <div>
 
             <h2>Student List</h2>
+
+            {/* =============================
+                STATISTICS
+            ============================== */}
+
+            {stats && (
+
+                <div style={{
+                    border: "1px solid gray",
+                    padding: "10px",
+                    marginBottom: "20px",
+                    width: "400px"
+                }}>
+
+                    <b>Total Students:</b> {stats.total_students}
+                    <br />
+
+                    <b>Average GPA:</b> {stats.average_gpa?.toFixed(2)}
+
+                    <br /><br />
+
+                    <b>Students by Major:</b>
+
+                    <ul>
+
+                        {stats.students_by_major.map((m, i) => (
+                            <li key={i}>
+                                {m.major} : {m.count}
+                            </li>
+                        ))}
+
+                    </ul>
+
+                </div>
+
+            )}
+
+            {/* =============================
+                ACTION BAR
+            ============================== */}
 
             <div style={{ marginBottom: "20px" }}>
 
@@ -99,9 +173,14 @@ function StudentList() {
 
             </div>
 
+            {/* =============================
+                STUDENT TABLE
+            ============================== */}
+
             <table border="1">
 
                 <thead>
+
                     <tr>
 
                         <th onClick={() => sortData("student_id")}>
@@ -133,6 +212,7 @@ function StudentList() {
                         </th>
 
                     </tr>
+
                 </thead>
 
                 <tbody>
@@ -142,15 +222,10 @@ function StudentList() {
                         <tr key={s.id}>
 
                             <td>{s.student_id}</td>
-
                             <td>{s.first_name}</td>
-
                             <td>{s.last_name}</td>
-
                             <td>{s.major}</td>
-
                             <td>{s.class_id}</td>
-
                             <td>{s.gpa}</td>
 
                             <td>
@@ -176,7 +251,6 @@ function StudentList() {
             </table>
 
         </div>
-
     )
 }
 
